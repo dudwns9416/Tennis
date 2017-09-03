@@ -1,76 +1,94 @@
+import java.util.HashMap;
+import java.util.Map;
 
 public class TennisGame1 implements TennisGame {
-    
-    private int m_score1 = 0;
-    private int m_score2 = 0;
-    private String player1Name;
-    private String player2Name;
 
-    public TennisGame1(String player1Name, String player2Name) {
-        this.player1Name = player1Name;
-        this.player2Name = player2Name;
-    }
+	private Player playerFirst;
+	private Player playerSecond;
 
-    public void wonPoint(String playerName) {
-        if (playerName == "player1")
-            m_score1 += 1;
-        else
-            m_score2 += 1;
-    }
+	private Map<Integer, String> sameScore = new HashMap();
+	private Map<Integer, String> moreScore = new HashMap();
+	private Map<Integer,String> sameDefaultScore = new HashMap<Integer, String>(); 
+	
+	private void putDefaultScore(){
+		sameDefaultScore.put(0, "Love-All");
+		sameDefaultScore.put(1, "Fifteen");
+		sameDefaultScore.put(2, "Thirty");
+		sameDefaultScore.put(3, "Forty");
+	}
 
-    public String getScore() {
-        String score = "";
-        int tempScore=0;
-        if (m_score1==m_score2)
-        {
-            switch (m_score1)
-            {
-                case 0:
-                        score = "Love-All";
-                    break;
-                case 1:
-                        score = "Fifteen-All";
-                    break;
-                case 2:
-                        score = "Thirty-All";
-                    break;
-                default:
-                        score = "Deuce";
-                    break;
-                
-            }
-        }
-        else if (m_score1>=4 || m_score2>=4)
-        {
-            int minusResult = m_score1-m_score2;
-            if (minusResult==1) score ="Advantage player1";
-            else if (minusResult ==-1) score ="Advantage player2";
-            else if (minusResult>=2) score = "Win for player1";
-            else score ="Win for player2";
-        }
-        else
-        {
-            for (int i=1; i<3; i++)
-            {
-                if (i==1) tempScore = m_score1;
-                else { score+="-"; tempScore = m_score2;}
-                switch(tempScore)
-                {
-                    case 0:
-                        score+="Love";
-                        break;
-                    case 1:
-                        score+="Fifteen";
-                        break;
-                    case 2:
-                        score+="Thirty";
-                        break;
-                    case 3:
-                        score+="Forty";
-                        break;
-                }
-            }
-        }
-        return score;
-    }
+	private void putSameScore() {
+		sameScore.put(0, "Love-All");
+		sameScore.put(1, "Fifteen-All");
+		sameScore.put(2, "Thirty-All");
+		sameScore.put(-1, "Deuce");
+	}
+
+	private void putMoreThanfourScore() {
+		moreScore.put(1, "Advantage player1");
+		moreScore.put(-1, "Advantage player2");
+		moreScore.put(2, "Win for player1");
+		moreScore.put(-2, "Win for player2");
+	}
+
+	public TennisGame1(String player1Name, String player2Name) {
+		this.playerFirst = new Player(player1Name);
+		this.playerSecond = new Player(player2Name);
+		putSameScore();
+		putMoreThanfourScore();
+		putDefaultScore();
+	}
+
+	public void wonPoint(String playerName) {
+		if (playerName == "player1") {
+			int score = playerFirst.getScore();
+			playerFirst.setScore(playerFirst.getScore() + 1);
+		} else {
+			playerSecond.setScore(playerSecond.getScore() + 1);
+		}
+
+	}
+
+	public String getScore() {
+		String score = "";
+		int scoreOfFirst = playerFirst.getScore();
+		int scoreOfSecond = playerSecond.getScore();
+		if (scoreOfFirst == scoreOfSecond) {
+			score = getSameScore(scoreOfFirst);
+		} else if (scoreOfFirst >= 4 || scoreOfSecond >= 4) {
+			int minusResult = scoreOfFirst - scoreOfSecond;
+			score = getScoreMoreThanFour(minusResult);
+		} else {
+			score = getDefalutScore(scoreOfFirst, scoreOfSecond);
+		}
+		return score;
+	}
+
+	
+	private String getDefalutScore(int scoreOfFirst, int scoreOfSecond) {
+		String score = sameDefaultScore.get(scoreOfFirst) +"-"+sameDefaultScore.get(scoreOfSecond);
+		return score;
+	}
+
+	private String getScoreMoreThanFour(int minusResult) {
+		String score = moreScore.get(Math.min(minusResult, 2));
+
+		if (score == null) {
+			score = moreScore.get(-2);
+		}
+		return score;
+
+	}
+
+	// 요구사항이 변경됐을 때 자료구조의 영향을 받는지 안 받는지.
+	private String getSameScore(int scoreOfFirst) {
+		String score = sameScore.get(scoreOfFirst);
+
+		if (score == null) {
+			score = sameScore.get(-1);
+		}
+		return score;
+
+	}
+
 }
